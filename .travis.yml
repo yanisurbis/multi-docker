@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t yanisurbis/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run yanisurbis/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t yanisurbis/multi-client ./client
+  - docker build -t yanisurbis/multi-nginx ./nginx
+  - docker build -t yanisurbis/multi-server ./server
+  - docker build -t yanisurbis/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push yanisurbis/multi-client
+  - docker push yanisurbis/multi-nginx
+  - docker push yanisurbis/multi-server
+  - docker push yanisurbis/multi-worker
+
+
